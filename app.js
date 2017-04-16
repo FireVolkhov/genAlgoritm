@@ -2,7 +2,7 @@
  * Created by User on 09.04.2017.
  */
 
-var fs = require('fs');
+//var fs = require('fs');
 //var util = require('util');
 //var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w', autoClose: true});
 //var log_stdout = process.stdout;
@@ -12,14 +12,16 @@ var fs = require('fs');
 //};
 
 const Population = require('./modules/population.js');
-const genome = require('./genome');
+//const genome = require('./genome');
 const enterGen = require('./genome/enter.js');
 
 const add = require('./test/add.js');
 
-const population = new Population(enterGen, genome, add.population);
+let population = Population.create(enterGen, add.population);
+population = Population.selection(population, add.test, add.population);
+population = Population.mutation(population, add.population);
+population = Population.selection(population, add.test, add.population);
 
-population.selection(add.test);
-population.mutation();
+console.log(population[0]);
 //population.selection(add.test);
 

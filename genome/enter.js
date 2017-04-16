@@ -1,30 +1,22 @@
 const Gen = require('./gen.js');
 
-module.exports = class EnterGen extends Gen {
-	constructor () {
-		super();
-		this.name = 'ENTER';
-		this.needGens = 1;
+module.exports = {
+	name: 'ENTER',
 
-		this.value = Function.prototype;
-	}
+	/**
+	 *
+	 * @param {int} index
+	 * @returns {string}
+	 */
+	create(index) {
+		return `${this.name} ${index}`;
+	},
 
-	setGens(gens) {
-		this.value = gens[0];
-		return this;
-	}
+	getRunFunction(gen, individual) {
+		const index = parseInt(gen[1]);
 
-	run() {
-		return this.value();
-	}
-
-	clone() {
-		const clone = new EnterGen();
-		clone.value = this.value;
-		return clone;
-	}
-
-	toString() {
-		return `#${this.number} - ${this.name}`
+		return function (args) {
+			return args[index];
+		};
 	}
 };

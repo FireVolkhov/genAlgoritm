@@ -1,72 +1,19 @@
 const random = require('../modules/random.js');
-const Gen = require('./gen.js');
 
-module.exports = class SubGen extends Gen {
-	constructor (a, b) {
-		super();
-		this.name = 'SUB';
-		this.needGens = 2;
+module.exports = {
+	name: 'SUB',
 
-		this.a = null;
-		this.b = null;
-	}
+	create() {
+		return `${this.name} # #`
+	},
 
-	setGens(gens) {
-		this.a = gens[0];
-		this.b = gens[1];
-		this.a.meUsed = this;
-		this.b.meUsed = this;
-		return this;
-	}
+	getRunFunction(gen, individual) {
+		const Gen = require('./gen.js');
+		const firstArg = Gen.getRunFunction(individual[parseInt(gen[1])], individual);
+		const secondArg = Gen.getRunFunction(individual[parseInt(gen[2])], individual);
 
-	run() {
-		return this.a.run() - this.b.run();
-	}
-
-	replaceGen(oldGen, newGen) {
-		if (this.a === oldGen) {
-			this.a = newGen;
+		return function (args) {
+			return firstArg(args) - secondArg(args);
 		}
-
-		if (this.b === oldGen) {
-			this.b = newGen;
-		}
-
-		return this;
-	}
-
-	clone(genome) {
-		console.log(genome.length, this.a.number, this.b.number);
-		const clone = new SubGen();
-		clone.a = genome[this.a.number];
-		clone.b = genome[this.b.number];
-		clone.a.meUsed = clone;
-		clone.b.meUsed = clone;
-		return clone;
-	}
-
-	restoreLink() {
-		if (this.meUsed) {
-			this.meUsed.replaceGen(
-				this,
-				random.getItem([this.a, this.b])
-			);
-		}
-
-		return this;
-	}
-
-	randomSetGen(gen) {
-		if (random.int([0, 1])) {
-			this.a = gen;
-		} else {
-			this.b = gen;
-		}
-
-		return this;
-	}
-
-	toString() {
-		return `#${this.number} - ${this.name} #${this.a.number} #${this.b.number}`;
 	}
 };

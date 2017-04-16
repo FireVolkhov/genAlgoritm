@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const random = require('./random.js');
 const utils = require('./utils.js');
+const genome = require('../genome');
 
 const Individual = require('./individual.js');
 
@@ -12,50 +13,45 @@ const defaultOptions = {
 	startGensCount: [1, 10]
 };
 
-module.exports = class Population {
-	constructor (enterGen, genome, options) {
-		this.enterGen = enterGen;
-		this.genome = genome;
-		this.options = _.extend(_.clone(defaultOptions), _.clone(options));
+module.exports = {
+	/**
+	 *
+	 * @param {Object} EnterGen
+	 * @param {Object} options
+	 * @returns {Array}
+	 */
+	create(EnterGen, options) {
+		options = _.extend(_.clone(defaultOptions), _.clone(options));
 
-		this.individuals = [];
-		this.habitat = [];
+		return utils.array(options.count).map(() => {
+			let individual = Individual.create();
 
-		this.create();
-	}
-
-	create() {
-		this.individuals = utils.array(this.options.count).map(() => {
-			const individual = new Individual();
-
-			utils.array(this.options.enterGens).map((x, i) => {
-				individual.addEnterGen(
-					new this.enterGen()
-						.setGens([() => this.habitat[i]])
-				);
+			utils.array(options.enterGens).map((x, i) => {
+				individual = Individual.addGen(individual, EnterGen.create(i))
 			});
 
-			const countGens = random.int(this.options.startGensCount[0], this.options.startGensCount[1]);
+			const countGens = random.int(options.startGensCount[0], options.startGensCount[1]);
 
 			utils.array(countGens).map(() => {
-				individual.addGen(new (random.getItem(this.genome))());
+				individual = Individual.addGen(individual, random.getItem(genome).create());
 			});
 
 			return individual;
 		});
-	}
+	},
 
-	selection(testFunction) {
-		this.individuals =
-			this.individuals.map((individual) => {
-				return [
-					individual,
-					testFunction((...args) => {
-						this.habitat = args;
-						return individual.run();
-					}),
-					individual.gens.length];
-			})
+	selection(individuals, testFunction, options) {
+		options = _.extend(_.clone(defaultOptions), _.clone(options));
+
+		return individuals
+				.map((individual) => {
+					const run = Individual.getRunFunction(individual);
+
+					return [
+						individual,
+						testFunction((...args) => run(args)),
+						individual.split('\n').length];
+				})
 				.sort((a, b) => {
 					if (a[1] < b[1]) {
 						return 1;
@@ -65,22 +61,20 @@ module.exports = class Population {
 						return a[2] > b[2];
 					}
 				})
-				.slice(0, Math.round(this.options.survivalPercent * this.individuals.length))
-				.map((x) => x[0]);
+				.slice(0, Math.round(options.survivalPercent * individuals.length))
+				.map((x) => x[0])
+		;
+	},
 
-		//this.individuals.forEach((x) => {
-		//	console.log(x.toString());
-		//});
-		//console.log(this.individuals[0].toString());
+	mutation(individuals, options) {
+		options = _.extend(_.clone(defaultOptions), _.clone(options));
 
-		return this;
-	}
-
-	mutation() {
-		while (this.individuals.length < this.options.count) {
-			this.individuals.push(
-				random.getItem(this.individuals).mutation()
+		while (individuals.length < options.count) {
+			individuals.push(
+					Individual.mutation(random.getItem(individuals))
 			);
 		}
+
+		return individuals;
 	}
 };
