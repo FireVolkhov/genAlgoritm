@@ -1,5 +1,5 @@
 module.exports = {
-	population: {
+	config: {
 		count: 50,
 		enterGens: 2
 	},

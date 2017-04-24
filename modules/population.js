@@ -5,14 +5,6 @@ const genome = require('../genome');
 
 const Individual = require('./individual.js');
 
-const defaultOptions = {
-	count: NaN,
-	enterGens: NaN,
-
-	survivalPercent: 0.5,
-	startGensCount: [1, 10]
-};
-
 module.exports = {
 	/**
 	 *
@@ -21,8 +13,6 @@ module.exports = {
 	 * @returns {Array}
 	 */
 	create(EnterGen, options) {
-		options = _.extend(_.clone(defaultOptions), _.clone(options));
-
 		return utils.array(options.count).map(() => {
 			let individual = Individual.create();
 
@@ -40,35 +30,37 @@ module.exports = {
 		});
 	},
 
-	selection(individuals, testFunction, options) {
-		options = _.extend(_.clone(defaultOptions), _.clone(options));
+	selection(inputIndividuals, testFunction, options) {
+		const ratingResult = inputIndividuals
+			.map((individual) => {
+				const run = Individual.getRunFunction(individual);
 
-		return individuals
-				.map((individual) => {
-					const run = Individual.getRunFunction(individual);
-
-					return [
-						individual,
-						testFunction((...args) => run(args)),
-						individual.split('\n').length];
-				})
-				.sort((a, b) => {
-					if (a[1] < b[1]) {
-						return 1;
-					} else if (a[1] > b[1]) {
-						return -1;
-					} else {
-						return a[2] > b[2];
-					}
-				})
-				.slice(0, Math.round(options.survivalPercent * individuals.length))
-				.map((x) => x[0])
+				return {
+					individual: individual,
+					rating: testFunction((...args) => run(args)),
+					gensCount: individual.split('\n').length
+				};
+			})
+			.sort((a, b) => {
+				if (a.rating < b.rating) {
+					return 1;
+				} else if (a.rating > b.rating) {
+					return -1;
+				} else {
+					return a.gensCount > b.gensCount ? 1 : -1;
+				}
+			})
 		;
+
+		const individuals = ratingResult
+			.slice(0, Math.round(options.survivalPercent * inputIndividuals.length))
+			.map((x) => x.individual)
+		;
+
+		return [individuals, ratingResult];
 	},
 
 	mutation(individuals, options) {
-		options = _.extend(_.clone(defaultOptions), _.clone(options));
-
 		while (individuals.length < options.count) {
 			individuals.push(
 					Individual.mutation(random.getItem(individuals))

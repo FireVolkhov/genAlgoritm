@@ -11,17 +11,39 @@
 //	fs.writeFile("./log.log", "b");
 //};
 
+const _ = require('lodash');
 const Population = require('./modules/population.js');
+const LifeEvents = require('./modules/life_events');
 //const genome = require('./genome');
 const enterGen = require('./genome/enter.js');
 
 const add = require('./test/add.js');
 
-let population = Population.create(enterGen, add.population);
-population = Population.selection(population, add.test, add.population);
-population = Population.mutation(population, add.population);
-population = Population.selection(population, add.test, add.population);
+const history = [];
+const defaultConfig = {
+	count: NaN,
+	enterGens: NaN,
 
-console.log(population[0]);
+	survivalPercent: 0.5,
+	startGensCount: [1, 10]
+};
+
+let config = _.extend(_.cloneDeep(defaultConfig), _.cloneDeep(add.config));
+let population = Population.create(enterGen, config);
+
+while(true) {
+	const result = Population.selection(population, add.test, config);
+	population = result[0];
+	history.unshift(result[1]);
+
+	config = LifeEvents.fireEvents(history, config);
+
+	population = Population.mutation(population, config);
+}
+
+
+// population = Population.selection(population, add.test, add.population);
+
+// console.log(population[0]);
 //population.selection(add.test);
 

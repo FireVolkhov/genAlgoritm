@@ -156,13 +156,17 @@ module.exports = {
 	},
 
 	/**
-	 * @param {Array} Sindividual
+	 * @param {Array} inputIndividual
 	 * @returns {Array}
 	 */
-	mutationRemoveGen(Sindividual) {
-		let individual = _.clone(Sindividual);
+	mutationRemoveGen(inputIndividual) {
+		let individual = _.cloneDeep(inputIndividual);
 		const countEnterGens = this.countEnterGens(individual);
 		const position = random.int(countEnterGens, individual.length - 1);
+
+		if (individual.length === (countEnterGens + 1)) {
+			return inputIndividual;
+		}
 
 		individual.splice(position, 1);
 
