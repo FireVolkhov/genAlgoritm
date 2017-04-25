@@ -41,6 +41,31 @@ const events = [
 		}
 	},
 
+	{
+		name: 'mutation shock',
+		isActive: false,
+		isTrigger: (history) => {
+			const slice = history.slice(0, 5);
+			const ratings = slice.map((step) => step[0].rating);
+			const topRatings = ratings.filter((rating) => rating === ratings[0]);
+
+			return 5 < history.length && ((topRatings.length === ratings.length) || this.isActive);
+		},
+		action: (history, config) => {
+			if (this.isActive) {
+				this.isActive = false;
+				config.count = config.count / 10;
+				console.log(`MUTATION SHOCK OFF set count: ${config.count}`);
+			} else {
+				this.isActive = true;
+				config.count = config.count * 10;
+				console.log(`MUTATION SHOCK set count: ${config.count}`);
+			}
+
+			return config;
+		}
+	},
+
 	// Завершения поиска решения
 	{
 		name: 'finish',
