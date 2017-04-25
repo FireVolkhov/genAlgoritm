@@ -76,14 +76,19 @@ module.exports = {
 	 * @returns {string}
 	 */
 	mutation(individual) {
-		const array = this.stringToArray(individual);
-		const newArray = random.getItem([
-			() => this.mutationAddGen(array),
-			() => this.mutationModifyGen(array),
-			() => this.mutationRemoveGen(array)
-		])();
+		let array = this.stringToArray(individual);
 
-		return this.arrayToString(newArray);
+		const mutationCount = random.int(1, array.length - this.countEnterGens(array));
+
+		utils.array(mutationCount).map(() => {
+			array = random.getItem([
+				() => this.mutationAddGen(array),
+				() => this.mutationModifyGen(array),
+				() => this.mutationRemoveGen(array)
+			])();
+		});
+
+		return this.arrayToString(array);
 	},
 
 	/**
