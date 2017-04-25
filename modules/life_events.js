@@ -43,25 +43,16 @@ const events = [
 
 	{
 		name: 'mutation shock',
-		isActive: false,
 		isTrigger: (history) => {
 			const slice = history.slice(0, 5);
 			const ratings = slice.map((step) => step[0].rating);
 			const topRatings = ratings.filter((rating) => rating === ratings[0]);
 
-			return 5 < history.length && ((topRatings.length === ratings.length) || this.isActive);
+			return 5 < history.length && (topRatings.length === ratings.length);
 		},
 		action: (history, config) => {
-			if (this.isActive) {
-				this.isActive = false;
-				config.count = config.count / 10;
-				console.log(`MUTATION SHOCK OFF set count: ${config.count}`);
-			} else {
-				this.isActive = true;
-				config.count = config.count * 10;
-				console.log(`MUTATION SHOCK set count: ${config.count}`);
-			}
-
+			config.count = Math.round(config.count * 1.1);
+			console.log(`MUTATION SHOCK set count: ${config.count}`);
 			return config;
 		}
 	},
@@ -70,21 +61,23 @@ const events = [
 	{
 		name: 'finish',
 		isTrigger: (history) => {
-			return true;
+			const STEPS = 100;
+
+			const slice = history.slice(0, STEPS);
+			const ratings = slice.map((step) => step[0].rating);
+			const topRatings = ratings.filter((rating) => rating === ratings[0]);
+
+			return STEPS < history.length && (topRatings.length === ratings.length);
 		},
 		action: (history, config) => {
-			if (500 < history.length) {
-				const timeAll = new Date().getTime();
-				console.log('--- FINISH ---');
-				console.log(`Time: ${timeAll - timeStart} ms`);
-				console.log(history[0][0].individual);
-				console.log(`Result: ${toPercent(history[0][0].rating)}`);
-				console.log(`Normal result: ${toPercent((Close - Open) / Open)}`);
-				// console.log(getPercent(history[0][0].rating));
-				process.exit(0);
-			} else {
-				return config;
-			}
+			const timeAll = new Date().getTime();
+			console.log('--- FINISH ---');
+			console.log(`Time: ${timeAll - timeStart} ms`);
+			console.log(history[0][0].individual);
+			console.log(`Result: ${toPercent(history[0][0].rating)}`);
+			console.log(`Normal result: ${toPercent((Close - Open) / Open)}`);
+			process.exit(0);
+			return config;
 		}
 	}
 ];
