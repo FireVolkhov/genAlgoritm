@@ -18,7 +18,7 @@ const LifeEvents = require('./modules/life_events');
 const enterGen = require('./genome/enter.js');
 
 // const add = require('./test/add.js');
-const add = require('./test/data/test.js');
+const add = require('./test/data2/test.js');
 
 const history = [];
 const defaultConfig = {
