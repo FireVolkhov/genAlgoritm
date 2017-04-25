@@ -47,8 +47,8 @@ module.exports = {
 				} else if (a.rating > b.rating) {
 					return -1;
 				} else {
-					return 0;
-					// return a.gensCount > b.gensCount ? 1 : -1;
+					//return 0;
+					 return a.gensCount > b.gensCount ? 1 : -1;
 				}
 			})
 		;

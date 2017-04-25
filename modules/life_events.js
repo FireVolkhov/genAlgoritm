@@ -4,6 +4,9 @@ const getPercent = function (count) {
 	return (Math.round((count * 100 / stepsCount) * 100) / 100) + '%'
 };
 
+const timeStart = new Date().getTime();
+let timeTick = timeStart;
+
 const events = [
 
 	// Начало поиска решения
@@ -24,7 +27,9 @@ const events = [
 			return true;
 		},
 		action: (history, config) => {
-			console.log(`${history.length} STEP`, history[0][0].rating, getPercent(history[0][0].rating));
+			const tick = new Date().getTime();
+			console.log(`${history.length} STEP`, history[0][0].rating, getPercent(history[0][0].rating), `${tick - timeTick} ms`);
+			timeTick = tick;
 			return config;
 		}
 	},
@@ -37,19 +42,12 @@ const events = [
 		},
 		action: (history, config) => {
 			if (500 < history.length) {
+				const timeAll = new Date().getTime();
 				console.log('--- FINISH ---');
-				console.log('--- 1 ---');
+				console.log(`Time: ${timeAll - timeStart} ms`);
 				console.log(history[0][0].individual);
 				console.log(history[0][0].rating);
 				console.log(getPercent(history[0][0].rating));
-				console.log('--- 2 ---');
-				console.log(history[0][1].individual);
-				console.log(history[0][1].rating);
-				console.log(getPercent(history[0][1].rating));
-				console.log('--- 3 ---');
-				console.log(history[0][2].individual);
-				console.log(history[0][2].rating);
-				console.log(getPercent(history[0][2].rating));
 				process.exit(0);
 			} else {
 				return config;
