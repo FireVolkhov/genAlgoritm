@@ -4,6 +4,7 @@ module.exports = [
 	require('./mult.js'),
 	require('./div.js'),
 	require('./abs.js'),
-	require('./if.js'),
-	require('./null.js')
+	require('./if.js')
 ];
+
+module.exports.concat(require('./consts.js'));
