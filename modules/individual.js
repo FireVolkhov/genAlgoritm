@@ -115,9 +115,12 @@ module.exports = {
 
 		individual.splice(position, 0, newGen);
 
-		const target = random.getItem(individual.slice(position + 1));
-		const targetPos = random.int(1, target.length - 1);
-		target[targetPos] = '' + position;
+		const target = random.getItem(individual.slice(position + 1).filter((gen) => 1 < gen.length));
+
+		if (target) {
+			const targetPos = random.int(1, target.length - 1);
+			target[targetPos] = '' + position;
+		}
 
 		return individual;
 	},
@@ -139,13 +142,24 @@ module.exports = {
 		}
 
 		if (changeType) {
-			const names = genomeNames.filter((x) => x !== target[0]);
-			const newGen = random.getItem(names);
+			const gens = genome.filter((gen) => gen.name !== target[0]);
+			const newGen = random.getItem(gens);
+			const needGens = newGen.needGens;
 
-			target[0] = newGen;
+			target[0] = newGen.name;
+
+			if (needGens < (target.length - 1)) {
+				target.length = needGens + 1;
+			} else if ((target.length - 1) < needGens) {
+				while((target.length - 1) < needGens) {
+					target.push('' + random.int(0, position - 1));
+				}
+			} else {
+				// Do nothing
+			}
 		}
 
-		if (changeArgs) {
+		if (changeArgs && 1 < target.length) {
 			const targetPos = random.int(1, target.length - 1);
 			const newArg = random.int(0, position - 1);
 

@@ -2,6 +2,7 @@ const random = require('../modules/random.js');
 
 module.exports = {
 	name: 'MULT',
+	needGens: 2,
 
 	create() {
 		return `${this.name} # #`

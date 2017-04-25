@@ -2,6 +2,7 @@ const Gen = require('./gen.js');
 
 module.exports = {
 	name: 'ENTER',
+	needGens: 0,
 
 	/**
 	 *
