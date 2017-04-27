@@ -1,6 +1,9 @@
 package modules
 
-import "time"
+import (
+	"time"
+	"io/ioutil"
+)
 
 type HistoryStep struct {
 	Time time.Time
@@ -47,6 +50,10 @@ func SaveHistoryStep (results HistoryStepResults) {
 
 	// Unshift
 	history = append([]*HistoryStep{newStep}, history...)
+
+	now := time.Now()
+	d1 := []byte(results[0].Individual.ToString())
+	ioutil.WriteFile("./result/" + now.Format("2006-01-02_15-04.gen"), d1, 0644)
 }
 
 func GetHistory () []*HistoryStep {

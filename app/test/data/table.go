@@ -31,7 +31,7 @@ func GetTableLen() int {
 }
 
 func init() {
-	file, _ := ioutil.ReadFile("./test/data/table.csv")
+	file, _ := ioutil.ReadFile("./app/test/data/table.csv")
 	dataAsString := string(file)
 	lines := strings.Split(dataAsString, "\n")
 
