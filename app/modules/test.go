@@ -2,6 +2,7 @@ package modules
 
 import (
 	"../../app/test/data"
+	"../../app/core"
 	"math"
 	"log"
 )
@@ -34,36 +35,87 @@ func Test (individual *Individual) float64 {
 	result := float64(1)
 
 	for (!iterator.IsFinished) {
-		slice := iterator.Next()
-		futureDay := slice[len(slice) - 1]
-		futureDayDif := futureDay.Close - futureDay.Open
-		futureDayPercent := math.Abs(futureDayDif) / futureDay.Open
-
-		args := make([]float64, len(slice))
-
-		for rowIndex, row := range slice {
-			args[rowIndex] = row.Dif
-		}
-
-		monkeyResult := individual.Run(args)
-
-		marketBay := 0 < futureDayDif
-		marketWait := futureDayDif == 0
-		marketSell := futureDayDif < 0
-
-		monkeyBay := 0 < monkeyResult
-		//monkeyWait := monkeyResult == 0
-		monkeySell := monkeyResult < 0
-
-		if ((monkeyBay && marketBay) ||
-			(monkeySell && marketSell)) {
-			result = result * (1 + futureDayPercent)
-		} else if (
-			(monkeyBay && (marketSell || marketWait)) ||
-			(monkeySell && (marketBay || marketWait))) {
-			result = result * (1 - futureDayPercent)
-		}
+		result, _, _ = iterationStep(iterator, individual, result)
 	}
 
 	return result
+}
+
+func GetReport (individual *Individual) string {
+	iterator := data.NewTableIterator(8)
+	result := float64(1)
+	history := make([]*historyStep, 0)
+
+	for (!iterator.IsFinished) {
+		var futureDay *data.TableRow
+		var monkeyResult float64
+
+		result, futureDay, monkeyResult = iterationStep(iterator, individual, result)
+
+		step := &historyStep{
+			tableRow: futureDay,
+			response: monkeyResult,
+			balance: result,
+		}
+
+		history = append(history, step)
+	}
+
+	return formatHistoryToCSV(history)
+}
+
+func iterationStep (iterator *data.TableIterator, individual *Individual, result float64) (float64, *data.TableRow, float64) {
+	slice := iterator.Next()
+	futureDay := slice[len(slice) - 1]
+	futureDayDif := futureDay.Close - futureDay.Open
+	futureDayPercent := math.Abs(futureDayDif) / futureDay.Open
+
+	args := make([]float64, len(slice))
+
+	for rowIndex, row := range slice {
+		args[rowIndex] = row.Dif
+	}
+
+	monkeyResult := individual.Run(args)
+
+	marketBay := 0 < futureDayDif
+	marketWait := futureDayDif == 0
+	marketSell := futureDayDif < 0
+
+	monkeyBay := 0 < monkeyResult
+	//monkeyWait := monkeyResult == 0
+	monkeySell := monkeyResult < 0
+
+	if ((monkeyBay && marketBay) ||
+	(monkeySell && marketSell)) {
+		result = result * (1 + futureDayPercent)
+	} else if (
+	(monkeyBay && (marketSell || marketWait)) ||
+	(monkeySell && (marketBay || marketWait))) {
+		result = result * (1 - futureDayPercent)
+	}
+
+	return result, futureDay, monkeyResult
+}
+
+type historyStep struct {
+	tableRow *data.TableRow
+	response float64
+	balance float64
+}
+
+func formatHistoryToCSV (history []*historyStep) string {
+	result := "Open,High,Low,Close,Volume,Response,Balance\n"
+
+	for _, step := range history {
+		result = result + core.Float64ToString(step.tableRow.Open) + ","
+		result = result + core.Float64ToString(step.tableRow.High) + ","
+		result = result + core.Float64ToString(step.tableRow.Low) + ","
+		result = result + core.Float64ToString(step.tableRow.Close) + ","
+		result = result + core.IntToString(step.tableRow.Volume) + ","
+		result = result + core.Float64ToString(step.response) + ","
+		result = result + core.Float64ToString(step.balance) + "\n"
+	}
+
+	return result;
 }

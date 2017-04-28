@@ -114,6 +114,45 @@ func (this *Individual) ToString () string {
 	}
 }
 
+func FromString (str string) *Individual {
+	const nameIndex = 1
+
+	individual := &Individual{
+		body: make([]*genType, 0),
+	}
+
+	lines := strings.Split(str, "\n")
+
+	for _, line := range lines {
+		if (line != "") {
+			words := strings.Split(line, " ");
+			var gen *genType
+
+			if (words[nameIndex] == "ENTER") {
+				gen = &genType{
+					Name: words[nameIndex],
+					Args: make([]int, 0),
+					IsEnterGen: true,
+				}
+			} else {
+				gen = &genType{
+					Name: words[nameIndex],
+					Args: make([]int, len(words) - 2),
+					IsEnterGen: false,
+				}
+
+				for argIndex, arg := range words[2:] {
+					gen.Args[argIndex] = core.StringToInt(arg)
+				}
+			}
+
+			individual.body = append(individual.body, gen)
+		}
+	}
+
+	return individual
+}
+
 type genType struct {
 	Name string
 	Args []int

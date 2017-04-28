@@ -65,3 +65,10 @@ func ToFloat64 (value interface{}) float64 {
 	}
 }
 
+func Float64ToString(value float64) string {
+	return strconv.FormatFloat(value, 'f', -1, 64)
+}
+
+func IntToString(value int) string {
+	return strconv.FormatInt(int64(value), 10)
+}

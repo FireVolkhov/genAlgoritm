@@ -24,7 +24,7 @@ type TableRow struct {
 	Dif float64
 }
 
-var table []TableRow
+var table []*TableRow
 
 func GetTableLen() int {
 	return len(table)
@@ -38,30 +38,39 @@ func init() {
 	// Убираем заголовки таблицы
 	// Убираем последнюю пустую строку
 	lines = lines[1:len(lines) - 1]
-	table = make([]TableRow, len(lines))
+	table = make([]*TableRow, len(lines))
 
 	for rowIndex, line := range lines {
 		lineArray := strings.Split(line, ",")
-		closeValue := core.ToFloat64(lineArray[indexClose])
 
+		table[rowIndex] = &TableRow{
+			Open: core.ToFloat64(lineArray[indexOpen]),
+			High: core.ToFloat64(lineArray[indexHigh]),
+			Low: core.ToFloat64(lineArray[indexLow]),
+			Close: core.ToFloat64(lineArray[indexClose]),
+			Volume: core.StringToInt(lineArray[indexVolume]),
+			AdjClose: core.ToFloat64(lineArray[indexAdjClose]),
+			Dif: 0,
+		}
+	}
+
+	// Reverse array
+	last := len(table) - 1
+	for i := 0; i < len(table)/2; i++ {
+		table[i], table[last - i] = table[last - i], table[i]
+	}
+
+	for rowIndex, row := range table {
 		var dif float64
 
 		if (rowIndex == 0) {
 			dif = core.ToFloat64(0);
 		} else {
 			prevClose := table[rowIndex - 1].Close
-			dif = closeValue - prevClose;
+			dif = row.Close - prevClose
 		}
 
-		table[rowIndex] = TableRow{
-			Open: core.ToFloat64(lineArray[indexOpen]),
-			High: core.ToFloat64(lineArray[indexHigh]),
-			Low: core.ToFloat64(lineArray[indexLow]),
-			Close: closeValue,
-			Volume: core.StringToInt(lineArray[indexVolume]),
-			AdjClose: core.ToFloat64(lineArray[indexAdjClose]),
-			Dif: dif,
-		}
+		table[rowIndex].Dif = dif
 	}
 
 	// Убираем первую строку с 0
@@ -74,15 +83,15 @@ type TableIterator struct {
 	IsFinished bool
 }
 
-func NewTableIterator(step int) TableIterator {
-	return TableIterator{
+func NewTableIterator(step int) *TableIterator {
+	return &TableIterator{
 		step: step,
 		position: 0,
 		IsFinished: false,
 	}
 }
 
-func (iterator *TableIterator) Next() []TableRow {
+func (iterator *TableIterator) Next() []*TableRow {
 	if (!iterator.IsFinished) {
 		position := iterator.position
 		end := (position - 1) + iterator.step
