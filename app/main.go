@@ -4,9 +4,16 @@ import (
 	"../app/modules"
 	"os"
 	"log"
+
+	//_ "net/http/pprof"
+	//"net/http"
 )
 
 func main() {
+	//go func() {
+	//	log.Println(http.ListenAndServe("localhost:6060", nil))
+	//}()
+
 	log.SetOutput(os.Stdout)
 
 	log.Println("	░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░")

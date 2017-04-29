@@ -60,14 +60,14 @@ func init() {
 		table[i], table[last - i] = table[last - i], table[i]
 	}
 
-	for rowIndex, row := range table {
+	for rowIndex := range table {
 		var dif float64
 
 		if (rowIndex == 0) {
 			dif = core.ToFloat64(0);
 		} else {
 			prevClose := table[rowIndex - 1].Close
-			dif = row.Close - prevClose
+			dif = table[rowIndex].Close - prevClose
 		}
 
 		table[rowIndex].Dif = dif
@@ -94,7 +94,7 @@ func NewTableIterator(step int) *TableIterator {
 func (iterator *TableIterator) Next() []*TableRow {
 	if (!iterator.IsFinished) {
 		position := iterator.position
-		end := (position - 1) + iterator.step
+		end := position + iterator.step
 		result := table[position:end]
 
 		iterator.position++

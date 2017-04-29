@@ -7,15 +7,18 @@ import (
 	"log"
 )
 
+var tick int = 0
+
 func DisplayTickResult (history []*HistoryStep) {
+	tick++
 	historyLen := len(history)
 	percent := history[0].Results[0].Rating * 100
 
 	if (1 < historyLen) {
 		elapsed := history[0].Time.Sub(history[1].Time)
-		log.Printf("%3.0f STEP %10.0f%s %s", float64(historyLen), percent, "%", elapsed)
+		log.Printf("%3.0f STEP %10.0f%s %s", float64(tick), percent, "%", elapsed)
 	} else {
-		log.Printf("%3.0f STEP %10.0f%s", float64(historyLen), percent, "%")
+		log.Printf("%3.0f STEP %10.0f%s", float64(tick), percent, "%")
 	}
 }
 
@@ -53,8 +56,8 @@ func GetReport (individual *Individual) string {
 		result, futureDay, monkeyResult = iterationStep(iterator, individual, result)
 
 		step := &historyStep{
-			tableRow: futureDay,
-			response: monkeyResult,
+			tableRow: &*futureDay,
+			monkeyResult: monkeyResult,
 			balance: result,
 		}
 
@@ -67,6 +70,7 @@ func GetReport (individual *Individual) string {
 func iterationStep (iterator *data.TableIterator, individual *Individual, result float64) (float64, *data.TableRow, float64) {
 	slice := iterator.Next()
 	futureDay := slice[len(slice) - 1]
+	slice = slice[:len(slice) - 1]
 	futureDayDif := futureDay.Close - futureDay.Open
 	futureDayPercent := math.Abs(futureDayDif) / futureDay.Open
 
@@ -100,12 +104,12 @@ func iterationStep (iterator *data.TableIterator, individual *Individual, result
 
 type historyStep struct {
 	tableRow *data.TableRow
-	response float64
+	monkeyResult float64
 	balance float64
 }
 
 func formatHistoryToCSV (history []*historyStep) string {
-	result := "Open,High,Low,Close,Volume,Response,Balance\n"
+	result := "Open,High,Low,Close,Volume,Dif,MonkeyResult,Balance;\n"
 
 	for _, step := range history {
 		result = result + core.Float64ToString(step.tableRow.Open) + ","
@@ -113,8 +117,9 @@ func formatHistoryToCSV (history []*historyStep) string {
 		result = result + core.Float64ToString(step.tableRow.Low) + ","
 		result = result + core.Float64ToString(step.tableRow.Close) + ","
 		result = result + core.IntToString(step.tableRow.Volume) + ","
-		result = result + core.Float64ToString(step.response) + ","
-		result = result + core.Float64ToString(step.balance) + "\n"
+		result = result + core.Float64ToString(step.tableRow.Dif) + ","
+		result = result + core.Float64ToString(step.monkeyResult) + ","
+		result = result + core.Float64ToString(step.balance) + ";\n"
 	}
 
 	return result;

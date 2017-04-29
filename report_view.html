@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.js"
+            integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+            crossorigin="anonymous"></script>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        body {
+            height: 100%;
+            margin: 0;
+            position: relative;
+        }
+
+        #body {
+            position: absolute;
+            bottom: 0;
+            top: 24px;
+            width: 100%;
+        }
+
+        .cell {
+            position: absolute;
+            width: 1px;
+            height: 0px;
+
+            left: 0px;
+            bottom: 0px;
+
+            background: red;
+        }
+
+        .cell-good {
+            background: green;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    const indexOpen = 0;
+    const indexHigh = 1;
+    const indexLow = 2;
+    const indexClose = 3;
+    const indexVolume = 4;
+    const indexDif = 5;
+    const indexMonkey = 6;
+    const Balance = 7;
+
+
+    function draw () {
+        const report = $('#data').val();
+        const rawTable = report.split(';').map((line) => line.split(','));
+        const header = rawTable.splice(0, 1);
+        rawTable.splice(rawTable.length - 1, 1);
+        const table = rawTable.map((row) => [
+                parseFloat(row[indexOpen]),
+                parseFloat(row[indexHigh]),
+                parseFloat(row[indexLow]),
+                parseFloat(row[indexClose]),
+                parseInt(row[indexVolume]),
+                parseFloat(row[indexDif]),
+                parseFloat(row[indexMonkey]),
+                parseFloat(row[Balance])
+        ]);
+
+        const tableWidth = table.length;
+        const tableHeight = table.map((row) => row[indexHigh]).reduce((a, b) => {console.log(a, b); return Math.max(a, b)});
+        const steps = table.map((row) => {
+            const isGoodMonkey = (0 < row[indexDif] && 0 < row[indexMonkey]) || (row[indexDif] < 0 && row[indexMonkey] < 0);
+            return {
+                max: (Math.max(row[indexOpen], row[indexClose]) / tableHeight) * 100,
+                min: (Math.min(row[indexOpen], row[indexClose]) / tableHeight) * 100,
+                isGoodMonkey: isGoodMonkey
+            };
+        });
+
+        const html = steps.map((step, stepIndex) => {
+            let result = '';
+
+            result += ` <div class="cell ${step.isGoodMonkey ? 'cell-good' : ''}" `;
+            result += ` style="left: ${stepIndex}px; `;
+            result += ` bottom: ${step.min}%; `;
+            result += ` height: ${step.max - step.min}%; `;
+            result += ' " ';
+            result += ' ></div> ';
+
+            return result;
+        }).join('');
+
+        $('#body').html(html);
+    }
+</script>
+
+<input id="data" type="text"/>
+<button onclick="draw();">Нарисовать</button>
+<div id="body">
+
+</div>
+
+</body>
+</html>

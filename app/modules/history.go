@@ -5,12 +5,14 @@ import (
 	"io/ioutil"
 )
 
+const HistoryLen int = 200;
+
 type HistoryStep struct {
 	Time time.Time
 	Results HistoryStepResults
 }
 
-type HistoryStepResults []HistoryStepResult
+type HistoryStepResults []*HistoryStepResult
 
 type HistoryStepResult struct {
 	Individual *Individual
@@ -50,6 +52,10 @@ func SaveHistoryStep (results HistoryStepResults) {
 
 	// Unshift
 	history = append([]*HistoryStep{newStep}, history...)
+
+	if (HistoryLen < len(history)) {
+		history = history[:HistoryLen]
+	}
 
 	now := time.Now()
 	d1 := []byte(results[0].Individual.ToString())

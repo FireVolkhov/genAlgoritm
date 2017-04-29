@@ -25,19 +25,38 @@ func NewPopulation (config *Config) *Population {
 }
 
 func (this *Population) Selection (config *Config) {
-	results := make(HistoryStepResults, len(this.individuals))
+	indLen := len(this.individuals)
+	results := make(HistoryStepResults, indLen)
+	chanel := make(chan *HistoryStepResult)
 
-	for indIndex := range results {
-		individual := this.individuals[indIndex]
-
-		results[indIndex] = HistoryStepResult{
+	for _, individual := range this.individuals {
+		historyStepResult := &HistoryStepResult{
 			Individual: &*individual,
-			Rating: Test(individual),
+			Rating: 0,
 		}
+
+		go calcIndividual(historyStepResult, individual, chanel)
 	}
 
+	for indIndex := 0; indIndex < indLen; {
+		results[indIndex] = <- chanel
+		indIndex++
+	}
+
+
+
+
+	//for indIndex := range results {
+	//	individual := this.individuals[indIndex]
+	//
+	//	results[indIndex] = HistoryStepResult{
+	//		Individual: &*individual,
+	//		Rating: Test(individual),
+	//	}
+	//}
+
 	sort.Sort(results)
-	SaveHistoryStep(results)
+	SaveHistoryStep(results[:1])
 
 	results = results[:int(core.Round(config.SurvivalPercent * float64(len(results))))]
 
@@ -53,4 +72,14 @@ func (this *Population) Mutation (config *Config) {
 		individual := this.individuals[core.RandomInt(0, len(this.individuals) - 1)]
 		this.individuals = append(this.individuals, individual.Mutation())
 	}
+}
+
+type caclIndividualChanelItem struct {
+	indIndex int
+	result float64
+}
+
+func calcIndividual (historyStep *HistoryStepResult, individual *Individual, chanel chan<- *HistoryStepResult) {
+	historyStep.Rating = Test(individual)
+	chanel <- historyStep
 }

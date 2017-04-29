@@ -1,0 +1,13 @@
+language: go
+go:
+  - master
+
+before_install:
+  - go run ./app/main.go
+
+script:
+  - sleep 1
+
+notifications:
+  email:
+    on_failure: change
