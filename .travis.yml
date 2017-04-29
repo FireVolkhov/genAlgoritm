@@ -2,6 +2,12 @@ language: go
 go:
   - master
 
+env:
+  - NODE=1
+  - NODE=2
+  - NODE=3
+  - NODE=4
+
 before_install:
   - go run ./app/main.go
 
