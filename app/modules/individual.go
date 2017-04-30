@@ -55,7 +55,7 @@ func (this *Individual) AddGen (gen *genome.Gen) {
 }
 
 func (this *Individual) Mutation () *Individual {
-	clone := this.clone()
+	clone := this.Clone()
 	mutationCount := core.RandomInt(1, clone.GetGensCount())
 	mutationRule := core.RandomInt(0, 2)
 
@@ -76,7 +76,7 @@ func (this *Individual) Mutation () *Individual {
 }
 
 func (this *Individual) Run (args []float64) float64 {
-	this.calcCache = make(map[int]float64)
+	this.calcCache = make(map[int]float64, 0)
 
 	for argIndex, arg := range args {
 		this.calcCache[argIndex] = arg
@@ -153,6 +153,15 @@ func FromString (str string) *Individual {
 	return individual
 }
 
+func (this *Individual) ToClearGenome () *Individual {
+	clone := this.Clone()
+	clone.toClearGenome()
+	return clone
+}
+
+
+
+// --- PRIVATE ---------------------------------------------------------------------------------------------------------
 type genType struct {
 	Name string
 	Args []int
@@ -188,7 +197,8 @@ func (this *Individual) calcGen (genIndex int, gen *genType) float64 {
 	}
 }
 
-func (this *Individual) clone () *Individual {
+func (this *Individual) Clone () *Individual {
+	//return FromString(this.ToString())
 	clone := &Individual{
 		body: make([]*genType, len(this.body)),
 		calcCache: make(map[int]float64),
@@ -207,6 +217,28 @@ func (this *Individual) clone () *Individual {
 
 func (this *Individual) countEnterGens () int {
 	return len(this.body) - this.GetGensCount()
+}
+
+func (this *Individual) toClearGenome () {
+	countEnterGens := this.countEnterGens()
+
+	for genIndex := len(this.body) - 2; (countEnterGens - 1) < genIndex; genIndex-- {
+		if (!this.isGenUsed(genIndex)) {
+			this.removeGen(genIndex)
+		}
+	}
+}
+
+func (this *Individual) isGenUsed (genIndex int) bool {
+	for _, gen := range this.body[genIndex:] {
+		for _, arg := range gen.Args {
+			if (arg == genIndex) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func (this *Individual) mutationAddGen () {
@@ -285,6 +317,12 @@ func (this *Individual) mutationRemoveGen () {
 	countEnterGens := this.countEnterGens()
 	position := core.RandomInt(countEnterGens, len(this.body) - 1)
 
+	this.removeGen(position)
+}
+
+func (this *Individual) removeGen (position int) {
+	countEnterGens := this.countEnterGens()
+
 	if (len(this.body) > (countEnterGens + 1)) {
 		copy(this.body[position:], this.body[position + 1:])
 		this.body = this.body[:len(this.body) - 1]
@@ -292,7 +330,9 @@ func (this *Individual) mutationRemoveGen () {
 		for genIndex, gen := range this.body {
 			if (position <= genIndex) {
 				for argIndex, arg := range gen.Args {
-					gen.Args[argIndex] = core.MaxInt(0, arg - 1)
+					if (position <= gen.Args[argIndex]) {
+						gen.Args[argIndex] = core.MaxInt(0, arg - 1)
+					}
 				}
 			}
 		}

@@ -5,6 +5,7 @@ import (
 	"../../app/core"
 	"math"
 	"log"
+	"sync"
 )
 
 var tick int = 0
@@ -29,19 +30,29 @@ func DisplayResult (history []*HistoryStep) {
 
 	log.Printf("Time: %s", elapsedAllTime)
 	log.Println(history[0].Results[0].Individual.ToString())
+	log.Println(history[0].Results[0].Individual.ToClearGenome().ToString())
 	log.Printf("Result All time: %10.0f%s", topRating * 100, "%")
 	log.Printf("Result Year: %.2f%s", percentYear * 100, "%")
 }
 
 func Test (individual *Individual) float64 {
-	iterator := data.NewTableIterator(8)
-	result := float64(1)
+	cacheResult, ok := getFromCache(individual)
 
-	for (!iterator.IsFinished) {
-		result, _, _ = iterationStep(iterator, individual, result)
+	if (ok) {
+		return cacheResult
+
+	} else {
+		iterator := data.NewTableIterator(8)
+		result := float64(1)
+
+		for (!iterator.IsFinished) {
+			result, _, _ = iterationStep(iterator, individual, result)
+		}
+
+		addToCache(individual, result)
+
+		return result
 	}
-
-	return result
 }
 
 func GetReport (individual *Individual) string {
@@ -65,6 +76,36 @@ func GetReport (individual *Individual) string {
 	}
 
 	return formatHistoryToCSV(history)
+}
+
+
+
+// --- PRIVATE ---------------------------------------------------------------------------------------------------------
+type cacheChanelItem struct {
+	key string
+	result float64
+}
+
+var resultCache = make(map[string]float64, 0)
+var resultMutex = &sync.RWMutex{}
+
+func getCacheKey (individual *Individual) string {
+	return individual.ToClearGenome().ToString()
+}
+
+func addToCache(individual *Individual, result float64) {
+	key := getCacheKey(individual)
+	resultMutex.Lock()
+	resultCache[key] = result
+	resultMutex.Unlock()
+}
+
+func getFromCache(individual *Individual) (float64, bool) {
+	key := getCacheKey(individual)
+	resultMutex.RLock()
+	result, ok := resultCache[key]
+	resultMutex.RUnlock()
+	return result, ok
 }
 
 func iterationStep (iterator *data.TableIterator, individual *Individual, result float64) (float64, *data.TableRow, float64) {

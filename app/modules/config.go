@@ -2,6 +2,7 @@ package modules
 
 type Config struct {
 	Count int
+	CountOnNode int
 	EnterGens int
 
 	SurvivalPercent float64
@@ -23,6 +24,7 @@ var config Config
 func init () {
 	config = Config{
 		Count: 200,
+		CountOnNode: 2000,
 		EnterGens: 7,
 
 		SurvivalPercent: 0.25,
