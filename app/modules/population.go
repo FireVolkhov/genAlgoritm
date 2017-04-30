@@ -31,21 +31,21 @@ func NewPopulation (config *Config) *Population {
 func (this *Population) Selection (config *Config) {
 	indLen := len(this.individuals)
 	results := make(HistoryStepResults, indLen)
-	chanel := make(chan *HistoryStepResult)
+	//chanel := make(chan *HistoryStepResult)
 
-	for _, individual := range this.individuals {
-		historyStepResult := &HistoryStepResult{
+	for indIndex, individual := range this.individuals {
+		results[indIndex] = &HistoryStepResult{
 			Individual: individual.Clone(),
-			Rating: 0,
+			Rating: Test(individual),
 		}
 
-		go calcIndividual(historyStepResult, individual, chanel)
+		//go calcIndividual(historyStepResult, individual, chanel)
 	}
 
-	for indIndex := 0; indIndex < indLen; {
-		results[indIndex] = <- chanel
-		indIndex++
-	}
+	//for indIndex := 0; indIndex < indLen; {
+	//	results[indIndex] = <- chanel
+	//	indIndex++
+	//}
 
 	sort.Sort(results)
 	SaveHistoryStep(results[:1])

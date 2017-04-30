@@ -66,8 +66,4 @@ func GetHistory () []*HistoryStep {
 	return history
 }
 
-var history []*HistoryStep
-
-func init() {
-	history = make([]*HistoryStep, 0)
-}
+var history = make([]*HistoryStep, 0)
