@@ -14,6 +14,8 @@ func main() {
 	//	log.Println(http.ListenAndServe("localhost:6060", nil))
 	//}()
 
+	_ = os.Mkdir("./result/", 0777)
+
 	log.SetOutput(os.Stdout)
 
 	log.Println("	░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░")
