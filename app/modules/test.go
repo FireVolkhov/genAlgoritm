@@ -10,6 +10,14 @@ import (
 
 var tick int = 0
 
+func GetTick () int {
+	return tick
+}
+
+func SetTick (_tick int) {
+	tick = _tick
+}
+
 func DisplayTickResult (history []*HistoryStep) {
 	tick++
 	historyLen := len(history)

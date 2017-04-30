@@ -32,6 +32,34 @@ func NewIndividual (enterGensCount, gensCount int) *Individual {
 	return individual
 }
 
+func (this *Individual) IsEqual (target *Individual) bool {
+	if (len(this.body) != len(target.body)) {
+		return false
+	}
+
+	for genIndex, thisGen := range this.body {
+		targetGen := target.body[genIndex]
+
+		if (thisGen.Name != targetGen.Name) {
+			return false
+		}
+
+		if (len(thisGen.Args) != len(targetGen.Args)) {
+			return false
+		}
+
+		for argIndex, thisArg := range thisGen.Args {
+			targetArgs := targetGen.Args[argIndex]
+
+			if (thisArg != targetArgs) {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
 func (this *Individual) GetGensCount() int {
 	var result int = 0
 
@@ -114,7 +142,7 @@ func (this *Individual) ToString () string {
 	}
 }
 
-func FromString (str string) *Individual {
+func StringToIndividual (str string) *Individual {
 	const nameIndex = 1
 
 	individual := &Individual{

@@ -42,5 +42,6 @@ func main() {
 		population.Selection(config)
 		modules.FireEvents(config)
 		population.Mutation(config)
+		population.Dump(config)
 	}
 }

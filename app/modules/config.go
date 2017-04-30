@@ -34,6 +34,6 @@ func init () {
 		MutationShockSteps: 5,
 		MutationShockRatio: 1.01,
 
-		FinishSteps: 100,
+		FinishSteps: 500,
 	}
 }

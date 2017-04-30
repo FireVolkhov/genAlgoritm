@@ -2,7 +2,8 @@ package modules
 
 import (
 	"time"
-	"io/ioutil"
+	"../../app/core"
+	//"io/ioutil"
 )
 
 const HistoryLen int = 200;
@@ -16,6 +17,7 @@ type HistoryStepResults []*HistoryStepResult
 
 type HistoryStepResult struct {
 	Individual *Individual
+	Index int
 	Rating float64
 }
 
@@ -29,14 +31,15 @@ func (slice HistoryStepResults) Less(firstIndex, secondIndex int) bool {
 
 	moreRating := first.Rating > second.Rating
 	lessRating := first.Rating < second.Rating
-	lessGens := first.Individual.GetGensCount() < second.Individual.GetGensCount()
+	//lessGens := first.Individual.GetGensCount() < second.Individual.GetGensCount()
 
 	if (moreRating) {
 		return true
 	} else if (lessRating) {
 		return false
 	} else {
-		return lessGens
+		return core.RandomBool()
+		//return !lessGens
 	}
 }
 
@@ -57,9 +60,9 @@ func SaveHistoryStep (results HistoryStepResults) {
 		history = history[:HistoryLen]
 	}
 
-	now := time.Now()
-	d1 := []byte(results[0].Individual.ToString())
-	ioutil.WriteFile("./result/" + now.Format("2006-01-02_15-04.gen"), d1, 0644)
+	//now := time.Now()
+	//d1 := []byte(results[0].Individual.ToString())
+	//ioutil.WriteFile("./result/" + now.Format("2006-01-02_15-04.gen"), d1, 0644)
 }
 
 func GetHistory () []*HistoryStep {

@@ -3,10 +3,13 @@ package modules
 import (
 	"../../app/core"
 	"sort"
-	"reflect"
 	"math/rand"
 	"time"
 	"log"
+	"io/ioutil"
+	"strings"
+	"path/filepath"
+	"os"
 )
 
 type Population struct {
@@ -14,34 +17,77 @@ type Population struct {
 }
 
 func NewPopulation (config *Config) *Population {
-	population := Population{
-		individuals: make([]*Individual, config.Count),
+	individuals, ok := getPopulationFromFile(config)
+
+	if (ok) {
+		return &Population{
+			individuals: individuals,
+		}
+	} else {
+		population := Population{
+			individuals: make([]*Individual, config.Count),
+		}
+
+		for indIndex := range population.individuals {
+			gensCount := core.RandomInt(config.StartGenCountMin, config.StartGenCountMax)
+			individual := NewIndividual(config.EnterGens, gensCount)
+
+			population.individuals[indIndex] = individual
+		}
+
+		return &population
 	}
-
-	for indIndex := range population.individuals {
-		gensCount := core.RandomInt(config.StartGenCountMin, config.StartGenCountMax)
-		individual := NewIndividual(config.EnterGens, gensCount)
-
-		population.individuals[indIndex] = individual
-	}
-
-	return &population
 }
+
+var inputChanel = make(chan *HistoryStepResult, 100)
+var outputChanel = make(chan *HistoryStepResult, 100)
 
 func (this *Population) Selection (config *Config) {
 	indLen := len(this.individuals)
 	results := make(HistoryStepResults, indLen)
-	//chanel := make(chan *HistoryStepResult)
 
 	for indIndex, individual := range this.individuals {
 		results[indIndex] = &HistoryStepResult{
 			Individual: individual.Clone(),
-			Rating: Test(individual),
+			Index: indIndex,
+			Rating: 0,
 		}
-
-		//go calcIndividual(historyStepResult, individual, chanel)
 	}
 
+	resultIndex := 0
+	completedResults := 0
+
+	for {
+		select {
+		case historyStepResult := <-outputChanel:
+			results[historyStepResult.Index] = historyStepResult
+			completedResults++
+
+			if (len(results) <= completedResults) {
+				goto endCalcPopulation
+			}
+		default:
+			if (resultIndex < len(results)) {
+				inputChanel <- results[resultIndex]
+				resultIndex++
+			}
+		}
+	}
+
+	endCalcPopulation:
+
+
+	//chanel := make(chan *HistoryStepResult)
+	//
+	//for _, individual := range this.individuals {
+	//	historyStepResult := &HistoryStepResult{
+	//		Individual: individual.Clone(),
+	//		Rating: 0,
+	//	}
+	//
+	//	go calcIndividual(historyStepResult, individual, chanel)
+	//}
+	//
 	//for indIndex := 0; indIndex < indLen; {
 	//	results[indIndex] = <- chanel
 	//	indIndex++
@@ -89,17 +135,28 @@ func (this *Population) Mutation (config *Config) {
 	for (len(this.individuals) < config.Count) {
 		individual := this.individuals[core.RandomInt(0, len(this.individuals) - 1)]
 		mutant := individual.Mutation()
-		this.individuals = append(this.individuals, mutant)
-		//if (!this.hasEqual(mutant)) {
-		//	this.individuals = append(this.individuals, mutant)
-		//}
+		//this.individuals = append(this.individuals, mutant)
+		if (!this.hasEqual(mutant)) {
+			this.individuals = append(this.individuals, mutant)
+		}
 	}
 	log.Printf("Time mutation: %s", time.Now().Sub(start))
 }
 
+func (this *Population) Dump (config *Config) {
+	step := GetTick()
+	individuals := make([]string, len(this.individuals))
+
+	for indIndex, indInPop := range this.individuals {
+		individuals[indIndex] = indInPop.ToString()
+	}
+	d1 := []byte(strings.Join(individuals, ";"))
+	ioutil.WriteFile("./result/" + core.IntToString(step) + ".pop", d1, 0644)
+}
+
 func (this *Population) hasEqual (individual *Individual) bool {
 	for _, indInPopulation := range this.individuals {
-		if (reflect.DeepEqual(individual, indInPopulation)) {
+		if (individual.IsEqual(indInPopulation)) {
 			return true
 		}
 	}
@@ -115,4 +172,61 @@ type caclIndividualChanelItem struct {
 func calcIndividual (historyStep *HistoryStepResult, individual *Individual, chanel chan<- *HistoryStepResult) {
 	historyStep.Rating = Test(individual)
 	chanel <- historyStep
+}
+
+func getPopulationFromFile (config *Config) (individuals []*Individual, ok bool) {
+	individuals = []*Individual{}
+	ok = false
+
+	lastStepFile := 0
+
+	// walk all files in directory
+	filepath.Walk("./result/", func(path string, info os.FileInfo, err error) error {
+		if (!info.IsDir()) {
+			names := strings.Split(info.Name(), ".")
+
+			if (names[1] == "pop") {
+				name := core.StringToInt(names[0])
+
+				if (lastStepFile < name) {
+					lastStepFile = name
+				}
+			}
+		}
+		return nil
+	})
+
+	if (0 < lastStepFile) {
+		file, _ := ioutil.ReadFile("./result/" + core.IntToString(lastStepFile) + ".pop")
+		dataAsString := string(file)
+		indStrings := strings.Split(dataAsString, ";")
+		individuals = make([]*Individual, len(indStrings))
+
+		for indIndex, individualString := range indStrings {
+			individuals[indIndex] = StringToIndividual(individualString)
+		}
+
+		config.Count = len(individuals)
+		SetTick(lastStepFile)
+
+		ok = true
+		return individuals, ok
+	} else {
+
+		return individuals, ok
+	}
+}
+
+func targetFunctionProcessor() {
+	for {
+		historyStep := <- inputChanel
+		historyStep.Rating = Test(historyStep.Individual)
+		outputChanel <- historyStep
+	}
+}
+
+func init () {
+	for i := 0; i < 8; i++ {
+		go targetFunctionProcessor()
+	}
 }
