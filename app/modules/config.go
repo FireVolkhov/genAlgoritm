@@ -23,7 +23,7 @@ var config Config
 
 func init () {
 	config = Config{
-		Count: 200,
+		Count: 8000,
 		CountOnNode: 2000,
 		EnterGens: 7,
 
@@ -34,6 +34,6 @@ func init () {
 		MutationShockSteps: 5,
 		MutationShockRatio: 1.01,
 
-		FinishSteps: 500,
+		FinishSteps: 1000,
 	}
 }

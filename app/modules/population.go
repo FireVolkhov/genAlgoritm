@@ -3,9 +3,7 @@ package modules
 import (
 	"../../app/core"
 	"sort"
-	"math/rand"
 	"time"
-	"log"
 	"io/ioutil"
 	"strings"
 	"path/filepath"
@@ -70,6 +68,8 @@ func (this *Population) Selection (config *Config) {
 			if (resultIndex < len(results)) {
 				inputChanel <- results[resultIndex]
 				resultIndex++
+			} else {
+				time.Sleep(100 * time.Millisecond)
 			}
 		}
 	}
@@ -96,11 +96,12 @@ func (this *Population) Selection (config *Config) {
 	sort.Sort(results)
 	SaveHistoryStep(results[:1])
 
-	for resultIndex := 1; resultIndex < len(results); resultIndex++ {
-		results[resultIndex].Rating = results[resultIndex].Rating * rand.Float64()
-	}
-
-	sort.Sort(results)
+	//Shauffel
+	//for resultIndex := 1; resultIndex < len(results); resultIndex++ {
+	//	results[resultIndex].Rating = results[resultIndex].Rating * rand.Float64()
+	//}
+	//
+	//sort.Sort(results)
 
 	//oldPopulation := this.individuals
 	//topIndividual := results[:1][0].Individual
@@ -131,16 +132,16 @@ func (this *Population) Selection (config *Config) {
 }
 
 func (this *Population) Mutation (config *Config) {
-	start := time.Now()
+	//start := time.Now()
 	for (len(this.individuals) < config.Count) {
 		individual := this.individuals[core.RandomInt(0, len(this.individuals) - 1)]
 		mutant := individual.Mutation()
-		//this.individuals = append(this.individuals, mutant)
-		if (!this.hasEqual(mutant)) {
-			this.individuals = append(this.individuals, mutant)
-		}
+		this.individuals = append(this.individuals, mutant)
+		//if (!this.hasEqual(mutant)) {
+		//	this.individuals = append(this.individuals, mutant)
+		//}
 	}
-	log.Printf("Time mutation: %s", time.Now().Sub(start))
+	//log.Printf("Time mutation: %s", time.Now().Sub(start))
 }
 
 func (this *Population) Dump (config *Config) {
@@ -206,7 +207,6 @@ func getPopulationFromFile (config *Config) (individuals []*Individual, ok bool)
 			individuals[indIndex] = StringToIndividual(individualString)
 		}
 
-		config.Count = len(individuals)
 		SetTick(lastStepFile)
 
 		ok = true

@@ -2,8 +2,6 @@ package modules
 
 import (
 	"time"
-	"../../app/core"
-	//"io/ioutil"
 )
 
 const HistoryLen int = 200;
@@ -31,15 +29,15 @@ func (slice HistoryStepResults) Less(firstIndex, secondIndex int) bool {
 
 	moreRating := first.Rating > second.Rating
 	lessRating := first.Rating < second.Rating
-	//lessGens := first.Individual.GetGensCount() < second.Individual.GetGensCount()
+	lessGens := first.Individual.GetGensCount() < second.Individual.GetGensCount()
 
 	if (moreRating) {
 		return true
 	} else if (lessRating) {
 		return false
 	} else {
-		return core.RandomBool()
-		//return !lessGens
+		//return core.RandomBool()
+		return !lessGens
 	}
 }
 
