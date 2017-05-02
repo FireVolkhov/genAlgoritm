@@ -150,14 +150,18 @@ func (this *Individual) ToCacheKey () string {
 	for _, gen := range clearInd.body {
 		if (gen.Name != "ENTER") {
 			key = append(key, genome.GetGenByName(gen.Name).Key)
+			key = append(key, byte(0))
 
 			for _, arg := range gen.Args {
-				if (arg <= math.MaxUint16) {
-					key = append(key, core.Uint16ToBytes(uint16(arg))...)
+				if (arg <= (math.MaxUint16 - 2)) {
+					key = append(key, core.Uint16ToBytes(uint16(arg + 2))...)
+					key = append(key, byte(0))
 				} else {
 					panic("Arg belove math.MaxUint16")
 				}
 			}
+
+			key = append(key, byte(1))
 		}
 	}
 

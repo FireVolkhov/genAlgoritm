@@ -39,6 +39,20 @@
         .cell-good {
             background: green;
         }
+
+        .year-line {
+            background: gray;
+        }
+
+        .year-percent {
+            position: absolute;
+
+            padding-left: 8px;
+            left: 0px;
+            top: 0px;
+
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -51,7 +65,7 @@
     const indexVolume = 4;
     const indexDif = 5;
     const indexMonkey = 6;
-    const Balance = 7;
+    const indexBalance = 7;
 
 
     function draw () {
@@ -67,22 +81,71 @@
                 parseInt(row[indexVolume]),
                 parseFloat(row[indexDif]),
                 parseFloat(row[indexMonkey]),
-                parseFloat(row[Balance])
+                parseFloat(row[indexBalance])
         ]);
 
         const tableWidth = table.length;
-        const tableHeight = table.map((row) => row[indexHigh]).reduce((a, b) => {console.log(a, b); return Math.max(a, b)});
-        const steps = table.map((row) => {
+        const tableHeight = table.map((row) => row[indexHigh]).reduce((a, b) => Math.max(a, b));
+
+        let lastYearResult = table[0][indexBalance];
+        let lastSpClose = table[0][indexClose];
+
+        const steps = table.map((row, index) => {
             const isGoodMonkey = (0 < row[indexDif] && 0 < row[indexMonkey]) || (row[indexDif] < 0 && row[indexMonkey] < 0);
+            const isYearEnd = (index % 365) === 0 || index === (table.length - 1);
+
+            let yearResult = 0;
+            let spResult = 0;
+
+            if (isYearEnd) {
+                const diff = row[indexBalance] - lastYearResult;
+                yearResult = diff / lastYearResult;
+                lastYearResult = row[indexBalance];
+
+                const spDiff = row[indexClose] - lastSpClose;
+                spResult = spDiff / lastSpClose;
+                lastSpClose = row[indexClose];
+            }
+
             return {
                 max: (Math.max(row[indexOpen], row[indexClose]) / tableHeight) * 100,
                 min: (Math.min(row[indexOpen], row[indexClose]) / tableHeight) * 100,
-                isGoodMonkey: isGoodMonkey
+                isGoodMonkey: isGoodMonkey,
+                isYearEnd: isYearEnd,
+                yearResult: yearResult,
+                spResult: spResult
             };
         });
 
         const html = steps.map((step, stepIndex) => {
             let result = '';
+
+            if (step.isYearEnd) {
+                result += ` <div class="cell year-line" `;
+                result += ` style="left: ${stepIndex}px; `;
+                result += ` bottom: 0%; `;
+                result += ` height: 100%; `;
+                result += ' " ';
+                result += ' ></div> ';
+
+                result += ` <div class="year-percent" `;
+                result += ` style="left: auto; `;
+                result += ` right: ${tableWidth - (stepIndex - 1)}px; `;
+                result += ` top: 0px; `;
+                result += ` " >`;
+                result += `<div>Year result: ${Math.round(step.yearResult * 10000) / 100}%</div>`;
+                result += `<div>SP result: ${Math.round(step.spResult * 10000) / 100}%</div>`;
+                result += `</div> `;
+            }
+
+            if (stepIndex === (steps.length - 1)) {
+                result += ` <div class="year-percent" `;
+                result += ` style="left: auto; `;
+                result += ` right: ${tableWidth - (stepIndex - 1)}px; `;
+                result += ` top: 36px; `;
+                result += ` " `;
+                result += ` >Full result: ${Math.round(table[table.length - 1][indexBalance] * 10000) / 100}%</div> `;
+            }
 
             result += ` <div class="cell ${step.isGoodMonkey ? 'cell-good' : ''}" `;
             result += ` style="left: ${stepIndex}px; `;
@@ -94,7 +157,9 @@
             return result;
         }).join('');
 
-        $('#body').html(html);
+        $('#body')
+                .css('width', tableWidth)
+                .html(html);
     }
 </script>
 

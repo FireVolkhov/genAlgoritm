@@ -37,7 +37,6 @@ func (slice HistoryStepResults) Less(firstIndex, secondIndex int) bool {
 	} else if (lessRating) {
 		return false
 	} else {
-		//return core.RandomBool()
 		return !lessGens
 	}
 }

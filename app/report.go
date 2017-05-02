@@ -59,5 +59,6 @@ func main() {
 		individual := modules.StringToIndividual(indStrings[0])
 		report := modules.GetReport(individual)
 		ioutil.WriteFile("./result/report.csv", []byte(report), 0644)
+		log.Println("### Report completed: " + core.IntToString(lastStepFile) + ".pop ###")
 	}
 }

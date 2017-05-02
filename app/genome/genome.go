@@ -99,35 +99,35 @@ var genomeMap map[string]*Gen
 
 func init () {
 	genome = []*Gen{
-		&Gen{"ABS", 1, byte(0)},
-		&Gen{"MOD", 2, byte(1)},
-		&Gen{"MIN", 2, byte(2)},
-		&Gen{"MAX", 2, byte(3)},
+		&Gen{"ABS", 1, byte(190)},
+		&Gen{"MOD", 2, byte(191)},
+		&Gen{"MIN", 2, byte(192)},
+		&Gen{"MAX", 2, byte(193)},
 
-		&Gen{"COS", 1, byte(10)},
-		&Gen{"SIN", 1, byte(11)},
-		&Gen{"TAN", 1, byte(12)},
-		&Gen{"ACOS", 1, byte(13)},
-		&Gen{"ASIN", 1, byte(14)},
-		&Gen{"ATAN", 1, byte(15)},
+		&Gen{"COS", 1, byte(200)},
+		&Gen{"SIN", 1, byte(201)},
+		&Gen{"TAN", 1, byte(202)},
+		&Gen{"ACOS", 1, byte(203)},
+		&Gen{"ASIN", 1, byte(204)},
+		&Gen{"ATAN", 1, byte(205)},
 
-		&Gen{"POW", 2, byte(20)},
-		&Gen{"LOG", 1, byte(21)},
+		&Gen{"POW", 2, byte(210)},
+		&Gen{"LOG", 1, byte(211)},
 
-		&Gen{"IF", 4, byte(30)},
+		&Gen{"IF", 4, byte(220)},
 
-		&Gen{"ADD", 2, byte(40)},
-		&Gen{"SUB", 2, byte(41)},
-		&Gen{"MULT", 2, byte(42)},
-		&Gen{"DIV", 2, byte(43)},
+		&Gen{"ADD", 2, byte(230)},
+		&Gen{"SUB", 2, byte(231)},
+		&Gen{"MULT", 2, byte(232)},
+		&Gen{"DIV", 2, byte(233)},
 
-		&Gen{"MINUS_ONE", 0, byte(50)},
-		&Gen{"NULL", 0, byte(51)},
-		&Gen{"ELER", 0, byte(52)},
-		&Gen{"ONE", 0, byte(53)},
-		&Gen{"GOLD_MEMBER", 0, byte(54)},
-		&Gen{"NEPER", 0, byte(55)},
-		&Gen{"PI", 0, byte(56)},
+		&Gen{"MINUS_ONE", 0, byte(240)},
+		&Gen{"NULL", 0, byte(241)},
+		&Gen{"ELER", 0, byte(242)},
+		&Gen{"ONE", 0, byte(243)},
+		&Gen{"GOLD_MEMBER", 0, byte(244)},
+		&Gen{"NEPER", 0, byte(245)},
+		&Gen{"PI", 0, byte(246)},
 	}
 
 	genomeMap = make(map[string]*Gen)
