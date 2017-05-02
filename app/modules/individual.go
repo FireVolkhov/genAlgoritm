@@ -5,6 +5,7 @@ import (
 	"../../app/core"
 	"strings"
 	"strconv"
+	"math"
 )
 
 type Individual struct {
@@ -140,6 +141,27 @@ func (this *Individual) ToString () string {
 	} else {
 		return ""
 	}
+}
+
+func (this *Individual) ToCacheKey () string {
+	key := make([]byte, 0)
+	clearInd := this.ToClearGenome()
+
+	for _, gen := range clearInd.body {
+		if (gen.Name != "ENTER") {
+			key = append(key, genome.GetGenByName(gen.Name).Key)
+
+			for _, arg := range gen.Args {
+				if (arg <= math.MaxUint16) {
+					key = append(key, core.Uint16ToBytes(uint16(arg))...)
+				} else {
+					panic("Arg belove math.MaxUint16")
+				}
+			}
+		}
+	}
+
+	return string(key)
 }
 
 func StringToIndividual (str string) *Individual {

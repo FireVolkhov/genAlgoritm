@@ -48,6 +48,7 @@ func (this *Population) Selection (config *Config) {
 		results[indIndex] = &HistoryStepResult{
 			Individual: individual.Clone(),
 			Index: indIndex,
+			GoodMonkey: 0,
 			Rating: 0,
 		}
 	}
@@ -170,11 +171,6 @@ type caclIndividualChanelItem struct {
 	result float64
 }
 
-func calcIndividual (historyStep *HistoryStepResult, individual *Individual, chanel chan<- *HistoryStepResult) {
-	historyStep.Rating = Test(individual)
-	chanel <- historyStep
-}
-
 func getPopulationFromFile (config *Config) (individuals []*Individual, ok bool) {
 	individuals = []*Individual{}
 	ok = false
@@ -220,7 +216,9 @@ func getPopulationFromFile (config *Config) (individuals []*Individual, ok bool)
 func targetFunctionProcessor() {
 	for {
 		historyStep := <- inputChanel
-		historyStep.Rating = Test(historyStep.Individual)
+		result, goodMonkey := Test(historyStep.Individual)
+		historyStep.Rating = result
+		historyStep.GoodMonkey = goodMonkey
 		outputChanel <- historyStep
 	}
 }

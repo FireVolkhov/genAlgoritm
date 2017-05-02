@@ -2,8 +2,6 @@ package modules
 
 import (
 	//"../../app/core"
-	"log"
-	"os"
 )
 
 func FireEvents (config *Config) {
@@ -45,9 +43,9 @@ func FireEvents (config *Config) {
 	//	}
 	//}
 
-	if (config.FinishSteps <= len(GetTick())) {
-		DisplayResult(history)
-		log.Println("--- FINISH ---")
-		os.Exit(0)
-	}
+	//if (config.FinishSteps <= GetTick()) {
+	//	DisplayResult(history)
+	//	log.Println("--- FINISH ---")
+	//	os.Exit(0)
+	//}
 }

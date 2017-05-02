@@ -16,6 +16,7 @@ type HistoryStepResults []*HistoryStepResult
 type HistoryStepResult struct {
 	Individual *Individual
 	Index int
+	GoodMonkey float64
 	Rating float64
 }
 

@@ -2,9 +2,12 @@ package main
 
 import (
 	"../app/modules"
+	"../app/core"
 	"os"
 	"log"
 	"io/ioutil"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -29,8 +32,32 @@ func main() {
 	log.Println("	░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░")
 	log.Println("### Start App ###")
 
-	file, _ := ioutil.ReadFile("./result/target.gen")
-	individual := modules.FromString(string(file))
-	report := modules.GetReport(individual)
-	ioutil.WriteFile("./result/report.csv", []byte(report), 0644)
+
+	lastStepFile := 0
+
+	// walk all files in directory
+	filepath.Walk("./result/", func(path string, info os.FileInfo, err error) error {
+		if (!info.IsDir()) {
+			names := strings.Split(info.Name(), ".")
+
+			if (names[1] == "pop") {
+				name := core.StringToInt(names[0])
+
+				if (lastStepFile < name) {
+					lastStepFile = name
+				}
+			}
+		}
+		return nil
+	})
+
+	if (0 < lastStepFile) {
+		file, _ := ioutil.ReadFile("./result/" + core.IntToString(lastStepFile) + ".pop")
+		dataAsString := string(file)
+		indStrings := strings.Split(dataAsString, ";")
+
+		individual := modules.StringToIndividual(indStrings[0])
+		report := modules.GetReport(individual)
+		ioutil.WriteFile("./result/report.csv", []byte(report), 0644)
+	}
 }

@@ -2,6 +2,7 @@ package core
 
 import (
 	"strconv"
+	"encoding/binary"
 )
 
 func StringToInt (value string) int {
@@ -71,4 +72,10 @@ func Float64ToString(value float64) string {
 
 func IntToString(value int) string {
 	return strconv.FormatInt(int64(value), 10)
+}
+
+func Uint16ToBytes(value uint16) []byte {
+	b := make([]byte, 2)
+	binary.LittleEndian.PutUint16(b, uint16(700))
+	return b
 }
