@@ -74,7 +74,9 @@ func init() {
 	}
 
 	// Убираем первую строку с 0
-	table = table[1:]
+//	table = table[1:]
+	dataLen := core.RoundToInt(0.5 * float64(len(table)))
+	table = table[dataLen:]
 }
 
 type TableIterator struct {
@@ -91,17 +93,21 @@ func NewTableIterator(step int) *TableIterator {
 	}
 }
 
-func (iterator *TableIterator) Next() []*TableRow {
-	if (!iterator.IsFinished) {
-		position := iterator.position
-		end := position + iterator.step
+func (this *TableIterator) Next() []*TableRow {
+	if (!this.IsFinished) {
+		position := this.position
+		end := position + this.step
 		result := table[position:end]
 
-		iterator.position++
-		iterator.IsFinished = (len(table) < (end + 1))
+		this.position++
+		this.IsFinished = (len(table) < (end + 1))
 		return result
 
 	} else {
 		return nil
 	}
+}
+
+func (this *TableIterator) GetLen () int {
+	return len(table) - (this.step - 1)
 }

@@ -11,6 +11,10 @@ func Round (value float64) float64 {
 	}
 }
 
+func RoundToInt (value float64) int {
+	return int(Round(value))
+}
+
 func MaxInt (first, second int) int {
 	if (first > second) {
 		return first

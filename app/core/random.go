@@ -15,6 +15,10 @@ func RandomBool () bool {
 	return RandomInt(0, 1) == 1
 }
 
+func RandomFloat64 () float64 {
+	return rand.Float64()
+}
+
 func GetItem (array []interface{}) interface{} {
 	return array[RandomInt(0, len(array) - 1)]
 }

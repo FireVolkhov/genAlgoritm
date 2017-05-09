@@ -3,6 +3,7 @@ package modules
 import (
 	"../../app/test/data"
 	"../../app/core"
+	"../../app/nnetwork"
 	"math"
 	"log"
 	"sync"
@@ -93,6 +94,75 @@ func GetReport (individual *Individual) string {
 			tableRow: &*futureDay,
 			monkeyResult: monkeyResult,
 			balance: result,
+		}
+
+		history = append(history, step)
+	}
+
+	return formatHistoryToCSV(history)
+}
+
+func GetReportForNNetwork (network nnetwork.NNetwork) string {
+	windowSize := 30
+	iterator := data.NewTableIterator(windowSize + 1)
+
+	data := make([]nnetwork.TrainData, iterator.GetLen())
+
+	stepIndex := 0;
+
+	for (!iterator.IsFinished) {
+		slice := iterator.Next()
+		diffSlice := make([]float64, len(slice))
+
+		for index, item := range slice {
+			diffSlice[index] = item.Dif
+		}
+
+		input := diffSlice[:windowSize]
+		output := diffSlice[windowSize:]
+
+		data[stepIndex] = nnetwork.TrainData{
+			Input: nnetwork.NormalizeInput(input),
+			Output: nnetwork.NormalizeInput(output),
+			Step: *slice[windowSize],
+		}
+
+		stepIndex++
+	}
+
+	mouseGoonSteps := 0
+	fullResult := float64(1)
+	history := make([]*historyStep, 0)
+
+	for _, step := range data {
+		realOutput := network.Run(step.Input)
+
+		futureDay := step.Step
+		futureDayDif := futureDay.Close - futureDay.Open
+		futureDayPercent := math.Abs(futureDayDif) / futureDay.Open
+
+		marketBay := 0 < futureDayDif
+		marketWait := futureDayDif == 0
+		marketSell := futureDayDif < 0
+
+		mouseBay := 0 < realOutput[0]
+		//mouseWait := realOutput == 0
+		mouseSell := realOutput[0] < 0
+
+		if ((mouseBay && marketBay) ||
+		(mouseSell && marketSell)) {
+			fullResult = fullResult * (1 + futureDayPercent)
+			mouseGoonSteps++
+		} else if (
+		(mouseBay && (marketSell || marketWait)) ||
+		(mouseSell && (marketBay || marketWait))) {
+			fullResult = fullResult * (1 - futureDayPercent)
+		}
+
+		step := &historyStep{
+			tableRow: &futureDay,
+			monkeyResult: 1 / realOutput[0],
+			balance: fullResult,
 		}
 
 		history = append(history, step)

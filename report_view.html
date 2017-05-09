@@ -78,7 +78,7 @@
                 parseFloat(row[indexHigh]),
                 parseFloat(row[indexLow]),
                 parseFloat(row[indexClose]),
-                parseInt(row[indexVolume]),
+                parseInt(row[indexVolume]) / parseFloat(row[indexClose]),
                 parseFloat(row[indexDif]),
                 parseFloat(row[indexMonkey]),
                 parseFloat(row[indexBalance])
@@ -86,6 +86,7 @@
 
         const tableWidth = table.length;
         const tableHeight = table.map((row) => row[indexHigh]).reduce((a, b) => Math.max(a, b));
+        const tableVolMax = table.map((row) => row[indexVolume]).reduce((a, b) => Math.max(a, b));
 
         let lastYearResult = table[0][indexBalance];
         let lastSpClose = table[0][indexClose];
@@ -110,6 +111,7 @@
             return {
                 max: (Math.max(row[indexOpen], row[indexClose]) / tableHeight) * 100,
                 min: (Math.min(row[indexOpen], row[indexClose]) / tableHeight) * 100,
+                vol: (row[indexVolume] / tableVolMax) * 100,
                 isGoodMonkey: isGoodMonkey,
                 isYearEnd: isYearEnd,
                 yearResult: yearResult,
@@ -151,6 +153,14 @@
             result += ` style="left: ${stepIndex}px; `;
             result += ` bottom: ${step.min}%; `;
             result += ` height: ${step.max - step.min}%; `;
+            result += ' " ';
+            result += ' ></div> ';
+
+            result += ` <div class="cell" `;
+            result += ` style="left: ${stepIndex}px; `;
+            result += ` background: black; `;
+            result += ` bottom: ${step.vol}%; `;
+            result += ` height: 0.5%; `;
             result += ' " ';
             result += ' ></div> ';
 
